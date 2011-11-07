@@ -281,6 +281,11 @@
                     <h3>Path to Destination folder:</h3><input type="text" name="destination_dir" value="${config['dest_dir']}" size="50">
                       <br>
                       <i class="smalltext">i.e. /Users/name/Music/iTunes or /Volumes/share/music</i>
+                    <br>
+                    <br>
+                    <h4><input type="checkbox" name="separate_quality_destination_dirs" value="0" ${config['sep_quality_dest_dirs']}> Use separate dirs for lossless and lossy files</h4>
+                    <h3>Path to Lossless Destination folder:</h3><input type="text" name="lossless_destination_dir" value="${config['lossless_dest_dir']}" size="50">
+                    <h3>Path to Lossy Destination folder:</h3><input type="text" name="lossy_destination_dir" value="${config['lossy_dest_dir']}" size="50">
                 </td>
             </tr>
 		</table>
