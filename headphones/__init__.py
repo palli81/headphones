@@ -59,6 +59,9 @@ COMMITS_BEHIND = None
 
 MUSIC_DIR = None
 DESTINATION_DIR = None
+SEPARATE_QUALITY_DESTINATION_DIRS = False
+LOSSLESS_DESTINATION_DIR = None
+LOSSY_DESTINATION_DIR = None
 FOLDER_FORMAT = None
 FILE_FORMAT = None
 PATH_TO_XML = None
@@ -183,7 +186,8 @@ def initialize():
     
         global __INITIALIZED__, FULL_PATH, PROG_DIR, VERBOSE, DAEMON, DATA_DIR, CONFIG_FILE, CFG, LOG_DIR, CACHE_DIR, \
                 HTTP_PORT, HTTP_HOST, HTTP_USERNAME, HTTP_PASSWORD, HTTP_ROOT, LAUNCH_BROWSER, GIT_PATH, \
-                CURRENT_VERSION, LATEST_VERSION, MUSIC_DIR, DESTINATION_DIR, PREFERRED_QUALITY, PREFERRED_BITRATE, DETECT_BITRATE, \
+                CURRENT_VERSION, LATEST_VERSION, MUSIC_DIR, DESTINATION_DIR, SEPARATE_QUALITY_DESTINATION_DIRS, \
+                LOSSLESS_DESTINATION_DIR, LOSSY_DESTINATION_DIR, PREFERRED_QUALITY, PREFERRED_BITRATE, DETECT_BITRATE, \
                 ADD_ARTISTS, CORRECT_METADATA, MOVE_FILES, RENAME_FILES, FOLDER_FORMAT, FILE_FORMAT, CLEANUP_FILES, INCLUDE_EXTRAS, \
                 ADD_ALBUM_ART, EMBED_ALBUM_ART, EMBED_LYRICS, DOWNLOAD_DIR, BLACKHOLE, BLACKHOLE_DIR, USENET_RETENTION, SEARCH_INTERVAL, \
                 TORRENTBLACKHOLE_DIR, NUMBEROFSEEDERS, ISOHUNT, KAT, MININOVA, DOWNLOAD_TORRENT_DIR, \
@@ -222,7 +226,10 @@ def initialize():
         LOG_DIR = check_setting_str(CFG, 'General', 'log_dir', '')
         
         MUSIC_DIR = check_setting_str(CFG, 'General', 'music_dir', '')
+        SEPARATE_QUALITY_DESTINATION_DIRS = bool(check_setting_int(CFG, 'General', 'separate_quality_destination_dirs', 0))
         DESTINATION_DIR = check_setting_str(CFG, 'General', 'destination_dir', '')
+        LOSSLESS_DESTINATION_DIR = check_setting_str(CFG, 'General', 'lossless_destination_dir', '')
+        LOSSY_DESTINATION_DIR = check_setting_str(CFG, 'General', 'lossy_destination_dir', '')
         PREFERRED_QUALITY = check_setting_int(CFG, 'General', 'preferred_quality', 0)
         PREFERRED_BITRATE = check_setting_int(CFG, 'General', 'preferred_bitrate', '')
         DETECT_BITRATE = bool(check_setting_int(CFG, 'General', 'detect_bitrate', 0))
@@ -414,6 +421,9 @@ def config_write():
 
     new_config['General']['music_dir'] = MUSIC_DIR
     new_config['General']['destination_dir'] = DESTINATION_DIR
+    new_config['General']['separate_quality_destination_dirs'] = SEPARATE_QUALITY_DESTINATION_DIRS
+    new_config['General']['lossless_destination_dir'] = LOSSLESS_DESTINATION_DIR
+    new_config['General']['lossy_destination_dir'] = LOSSY_DESTINATION_DIR
     new_config['General']['preferred_quality'] = PREFERRED_QUALITY
     new_config['General']['preferred_bitrate'] = PREFERRED_BITRATE
     new_config['General']['detect_bitrate'] = int(DETECT_BITRATE)
