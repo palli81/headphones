@@ -227,12 +227,19 @@ def doPostProcessing(albumid, albumpath, release, tracks, downloaded_track_list)
 	if headphones.RENAME_FILES:
 		renameFiles(albumpath, downloaded_track_list, release)
 	
-	if headphones.MOVE_FILES and headphones.DESTINATION_DIR:
+	if headphones.MOVE_FILES and headphones.DESTINATION_DIR and not headphones.SEPARATE_QUALITY_DESTINATION_DIRS:
 		albumpath = moveFiles(albumpath, release, tracks)
 	
-	if headphones.MOVE_FILES and not headphones.DESTINATION_DIR:
+	if headphones.MOVE_FILES and not headphones.DESTINATION_DIR and not headphones.SEPARATE_QUALITY_DESTINATION_DIRS:
 		logger.error('No DESTINATION_DIR has been set. Set "Destination Directory" to the parent directory you want to move the files to')
 		pass
+
+	if headphones.MOVE_FILES and headphones.SEPARATE_QUALITY_DESTINATION_DIRS and not (headphones.LOSSLESS_DESTINATION_DIR and headphones.LOSSY_DESTINATION_DIR):
+		logger.error('Separate quality specified but LOSSLESS and LOSSY destination directories not set.')
+		pass
+
+	if headphones.MOVE_FILES and headphones.SEPARATE_QUALITY_DESTINATION_DIRS and headphones.LOSSLESS_DESTINATION_DIR and headphones.LOSSY_DESTINATION_DIR:
+		albumpath = moveFiles(albumpath, release, tracks)
 		
 	myDB = db.DBConnection()
 	# There's gotta be a better way to update the have tracks - sqlite
@@ -322,13 +329,31 @@ def moveFiles(albumpath, release, tracks):
 	if folder.endswith('.'):
 		folder = folder.replace(folder[len(folder)-1], '_')
 	
-	destination_path = os.path.normpath(os.path.join(headphones.DESTINATION_DIR, folder)).encode(headphones.SYS_ENCODING)
+	# Lossy or Lossless?
+	quality = "Lossy"
+	for r,d,f in os.walk(albumpath):
+                for files in f:
+			if any(files.lower().endswith('.' + x.lower()) for x in headphones.LOSSLESS_MEDIA_FORMATS):
+				quality = "Lossless"
+
+	if headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossless":
+		destination_path = os.path.normpath(os.path.join(headphones.LOSSLESS_DESTINATION_DIR, folder)).encode(headphones.SYS_ENCODING)
+	elif headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossy":
+		destination_path = os.path.normpath(os.path.join(headphones.LOSSY_DESTINATION_DIR, folder)).encode(headphones.SYS_ENCODING)
+	else:
+		destination_path = os.path.normpath(os.path.join(headphones.DESTINATION_DIR, folder)).encode(headphones.SYS_ENCODING)
 	
 	if os.path.exists(destination_path):
 		i = 1
 		while True:
 			newfolder = folder + '[%i]' % i
 			destination_path = os.path.normpath(os.path.join(headphones.DESTINATION_DIR, newfolder)).encode(headphones.SYS_ENCODING)
+			if headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossless":
+				destination_path = os.path.normpath(os.path.join(headphones.LOSSLESS_DESTINATION_DIR, newfolder)).encode(headphones.SYS_ENCODING)
+			elif headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossy":
+				destination_path = os.path.normpath(os.path.join(headphones.LOSSY_DESTINATION_DIR, newfolder)).encode(headphones.SYS_ENCODING)
+			else:
+				destination_path = os.path.normpath(os.path.join(headphones.DESTINATION_DIR, newfolder)).encode(headphones.SYS_ENCODING)
 			if os.path.exists(destination_path):
 				i += 1
 			else:
@@ -351,7 +376,13 @@ def moveFiles(albumpath, release, tracks):
 	# Chmod the directories using the folder_format (script courtesy of premiso!)
 	folder_list = folder.split('/')
 	
-	temp_f = headphones.DESTINATION_DIR
+	if headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossless":
+		temp_f = headphones.LOSSLESS_DESTINATION_DIR
+	elif headphones.SEPARATE_QUALITY_DESTINATION_DIRS and quality == "Lossy":
+		temp_f = headphones.LOSSY_DESTINATION_DIR
+	else:
+		temp_f = headphones.DESTINATION_DIR
+
 	for f in folder_list:
 		temp_f = os.path.join(temp_f, f)
 		os.chmod(os.path.normpath(temp_f).encode(headphones.SYS_ENCODING), int(headphones.FOLDER_PERMISSIONS, 8))
